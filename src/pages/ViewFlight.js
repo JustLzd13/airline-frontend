@@ -1,23 +1,30 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Container, Card, Button, Spinner, Alert, Row, Col, Badge } from "react-bootstrap";
 import { FaPlane, FaClock, FaCalendarAlt, FaMapMarkerAlt, FaArrowRight, FaCheckCircle, FaTimesCircle, FaChair } from "react-icons/fa";
 import AppNavbar from "../components/AppNavbar";
 import Footer from "../components/Footer";
+import UserContext from "../UserContext"; // ✅ Import UserContext
 
 const ViewFlight = () => {
   const { id } = useParams(); // Get flight ID from URL
   const navigate = useNavigate();
+  const { user } = useContext(UserContext); // ✅ Use UserContext
+
   const [flight, setFlight] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    if (!user) {
+      navigate("/login"); // ✅ Redirect if not logged in
+      return;
+    }
+
     const fetchFlightDetails = async () => {
       try {
         console.log("Fetching flight details for ID:", id);
 
-        // ✅ Get token from localStorage
         const token = localStorage.getItem("token");
         if (!token) {
           throw new Error("Authentication failed. Please log in.");
@@ -51,7 +58,7 @@ const ViewFlight = () => {
     };
 
     fetchFlightDetails();
-  }, [id]);
+  }, [id, user, navigate]);
 
   if (loading) {
     return <Spinner animation="border" className="d-block mx-auto mt-5" />;
@@ -85,7 +92,6 @@ const ViewFlight = () => {
 
   return (
     <>
-
       <Container className="mt-4 pb-5 mb-4">
         <Card className="shadow-lg border-0 rounded p-4" style={{ backgroundColor: "#f8e48e" }}>
           <Card.Body>
@@ -124,13 +130,13 @@ const ViewFlight = () => {
                   </Col>
                   <Col md={6}>
                     <h5><FaClock className="me-2 text-info" /> Departure Time</h5>
-                    <p className="fw-bold">{flight.departureTime}</p>
+                    <p className="fw-bold">{formatTime(flight.departureTime)}</p>
                   </Col>
                 </Row>
                 <Row className="text-center mt-3">
                   <Col md={6}>
                     <h5><FaClock className="me-2 text-primary" /> Arrival Time</h5>
-                    <p className="fw-bold">{flight.arrivalTime}</p>
+                    <p className="fw-bold">{formatTime(flight.arrivalTime)}</p>
                   </Col>
                   <Col md={6}>
                     <h5><FaChair className="me-2 text-dark" /> Available Seats</h5>

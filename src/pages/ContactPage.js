@@ -1,12 +1,19 @@
 import React, { useState } from "react";
-import { Container, Form, Button, Card } from "react-bootstrap";
+import { Container, Form, Button, Card, Spinner } from "react-bootstrap";
 import { Notyf } from "notyf";
 import "notyf/notyf.min.css";
 import emailjs from "@emailjs/browser"; // ✅ Import EmailJS
 import Footer from "../components/Footer";
 
 const Contact = () => {
-  const notyf = new Notyf();
+  const notyf = new Notyf({
+    duration: 3000,
+    position: { x: "right", y: "top" },
+    types: [
+      { type: "error", background: "red", icon: false },
+      { type: "success", background: "green", icon: false },
+    ],
+  });
 
   // Form state
   const [formData, setFormData] = useState({
@@ -19,14 +26,23 @@ const Contact = () => {
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData({ ...formData, [e.target.name]: e.target.value.trim() });
   };
+
+  // ✅ Validate Email Format
+  const isValidEmail = (email) => /\S+@\S+\.\S+/.test(email);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // ✅ Basic validation
     if (!formData.fullName || !formData.email || !formData.subject || !formData.message) {
       notyf.error("Please fill in all fields before submitting.");
+      return;
+    }
+
+    if (!isValidEmail(formData.email)) {
+      notyf.error("Please enter a valid email address.");
       return;
     }
 
@@ -78,6 +94,8 @@ const Contact = () => {
                   name="fullName"
                   value={formData.fullName}
                   onChange={handleChange}
+                  placeholder="Enter your full name"
+                  aria-label="Full Name"
                   required
                 />
               </Form.Group>
@@ -89,6 +107,8 @@ const Contact = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
+                  placeholder="Enter your email address"
+                  aria-label="Email Address"
                   required
                 />
               </Form.Group>
@@ -100,6 +120,8 @@ const Contact = () => {
                   name="subject"
                   value={formData.subject}
                   onChange={handleChange}
+                  placeholder="Enter the subject of your message"
+                  aria-label="Subject"
                   required
                 />
               </Form.Group>
@@ -112,13 +134,15 @@ const Contact = () => {
                   value={formData.message}
                   onChange={handleChange}
                   rows={4}
+                  placeholder="Write your message here..."
+                  aria-label="Message"
                   required
                 />
               </Form.Group>
 
               <div className="text-center">
-                <Button variant="warning" type="submit" disabled={loading}>
-                  {loading ? "Sending..." : "Send Message"}
+                <Button variant="warning" type="submit" disabled={loading} aria-label="Send Message">
+                  {loading ? <Spinner animation="border" size="sm" /> : "Send Message"}
                 </Button>
               </div>
             </Form>

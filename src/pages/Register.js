@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Container, Form, Button, Card, Alert } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import Footer from "../components/Footer";
 import { Notyf } from "notyf";
 import "notyf/notyf.min.css";
+import UserContext from "../UserContext"; // ✅ Import UserContext
 
 const Register = () => {
+  const { setUser } = useContext(UserContext); // ✅ Use UserContext
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -54,12 +56,78 @@ const Register = () => {
         throw new Error(data.message || "Registration failed.");
       }
 
-      notyf.success("Registration successful! Redirecting...");
-      setTimeout(() => navigate("/login"), 2000);
+      notyf.success("Registration successful! Logging you in...");
+
+      // ✅ Automatically login after registration
+      await handleLogin(formData.email, formData.password);
     } catch (error) {
       console.error("Error during registration:", error);
       setError(error.message);
       notyf.error(error.message);
+    }
+  };
+
+  const handleLogin = async (email, password) => {
+    try {
+      const response = await fetch("https://airisle-api-3.onrender.com/users/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Login failed.");
+      }
+
+      // ✅ Save token in localStorage
+      localStorage.setItem("token", data.access);
+
+      // ✅ Fetch user profile after login
+      await fetchUserProfile();
+    } catch (err) {
+      console.error("Login error:", err.message);
+      setError("Registration successful, but auto-login failed. Please login manually.");
+      notyf.error("Auto-login failed. Try logging in.");
+      navigate("/login");
+    }
+  };
+
+  const fetchUserProfile = async () => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      setError("No token found, please log in again.");
+      notyf.error("No token found.");
+      return;
+    }
+
+    try {
+      const response = await fetch("https://airisle-api-3.onrender.com/users/user-profile", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Unauthorized access.");
+      }
+
+      console.log("User profile loaded:", data.user);
+
+      // ✅ Update global user state
+      setUser(data.user);
+      notyf.success("Welcome! Redirecting...");
+      navigate("/");
+    } catch (error) {
+      console.error("Profile Fetch Error:", error);
+      setError("Failed to load profile.");
+      notyf.error("Error loading profile.");
+      navigate("/login");
     }
   };
 
@@ -104,40 +172,21 @@ const Register = () => {
             <h2 className="text-center fw-bold">Register</h2>
             {error && <Alert variant="danger">{error}</Alert>}
             <Form onSubmit={handleSubmit}>
-              <Form.Group className="mt-3">
-                <Form.Label>First Name</Form.Label>
-                <Form.Control type="text" name="firstName" placeholder="Enter First Name" value={formData.firstName} onChange={handleChange} required />
-              </Form.Group>
-
-              <Form.Group className="mt-3">
-                <Form.Label>Last Name</Form.Label>
-                <Form.Control type="text" name="lastName" placeholder="Enter Last Name" value={formData.lastName} onChange={handleChange} required />
-              </Form.Group>
-
-              <Form.Group className="mt-3">
-                <Form.Label>Email</Form.Label>
-                <Form.Control type="email" name="email" placeholder="Enter Email" value={formData.email} onChange={handleChange} required />
-              </Form.Group>
-
-              <Form.Group className="mt-3">
-                <Form.Label>Password</Form.Label>
-                <Form.Control type="password" name="password" placeholder="Enter Password (min 6 chars)" value={formData.password} onChange={handleChange} required />
-              </Form.Group>
-
-              <Form.Group className="mt-3">
-                <Form.Label>Mobile Number</Form.Label>
-                <Form.Control type="text" name="mobileNumber" placeholder="Enter Mobile Number" value={formData.mobileNumber} onChange={handleChange} required />
-              </Form.Group>
-
-              <Form.Group className="mt-3">
-                <Form.Label>Present Address</Form.Label>
-                <Form.Control type="text" name="presentAddress" placeholder="Enter Address" value={formData.presentAddress} onChange={handleChange} required />
-              </Form.Group>
-
-              <Form.Group className="mt-3">
-                <Form.Label>Date of Birth</Form.Label>
-                <Form.Control type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} required />
-              </Form.Group>
+              {["firstName", "lastName", "email", "password", "mobileNumber", "presentAddress", "dateOfBirth"].map(
+                (field, index) => (
+                  <Form.Group className="mt-3" key={index}>
+                    <Form.Label>{field.replace(/([A-Z])/g, " $1")}</Form.Label>
+                    <Form.Control
+                      type={field === "password" ? "password" : field === "dateOfBirth" ? "date" : "text"}
+                      name={field}
+                      placeholder={`Enter ${field.replace(/([A-Z])/g, " $1")}`}
+                      value={formData[field]}
+                      onChange={handleChange}
+                      required
+                    />
+                  </Form.Group>
+                )
+              )}
 
               <Button variant="warning" type="submit" className="mt-4 w-100 fw-bold shadow-sm">
                 Register

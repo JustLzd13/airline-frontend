@@ -1,63 +1,101 @@
 import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { Container, Form, Button, Card, Alert } from "react-bootstrap";
+import { Container, Form, Button, Card, Alert, Spinner } from "react-bootstrap";
 import Footer from "../components/Footer";
 import { Notyf } from "notyf";
 import "notyf/notyf.min.css";
-import UserContext from "../UserContext"; // ✅ Import UserContext
+import UserContext from "../UserContext"; // Import UserContext
+
+const notyf = new Notyf({
+  duration: 3000,
+  position: { x: "right", y: "top" },
+  types: [
+    { type: "error", background: "red", icon: false },
+    { type: "success", background: "green", icon: false },
+  ],
+});
 
 const Login = () => {
-  const { setUser } = useContext(UserContext); // ✅ Access UserContext
+  const { setUser } = useContext(UserContext); // Use UserContext
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const notyf = new Notyf();
 
   const handleLogin = async (e) => {
-  e.preventDefault();
-  setError(""); // Clear previous errors
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
-  try {
-    const response = await fetch("https://airisle-api-3.onrender.com/users/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      const response = await fetch("https://airisle-api-3.onrender.com/users/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-    const data = await response.json();
-    console.log("Full API Response:", data);
+      const data = await response.json();
 
-    if (!data.access) {
-      throw new Error("Invalid login credentials");
+      if (!response.ok) {
+        throw new Error(data.message || "Invalid credentials");
+      }
+
+      // ✅ Save token in localStorage
+      localStorage.setItem("token", data.access);
+      console.log("Token saved:", data.access);
+
+      // ✅ Fetch user profile after login
+      await fetchUserProfile();
+    } catch (err) {
+      console.error("Login error:", err.message);
+      setError(err.message);
+      notyf.error(err.message);
+      setLoading(false);
+    }
+  };
+
+  const fetchUserProfile = async () => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      setError("No token found, please log in again.");
+      notyf.error("No token found.");
+      setLoading(false);
+      return;
     }
 
-    if (!data.user) {
-      console.warn("Warning: User details not received, only token was provided.");
-    }
+    try {
+      const response = await fetch("https://airisle-api-3.onrender.com/users/user-profile", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
 
-    // ✅ Store token and user details (if available)
-    localStorage.setItem("token", data.access);
-    if (data.user) {
-      localStorage.setItem("user", JSON.stringify(data.user));
-    }
+      const data = await response.json();
 
-    // ✅ Update UserContext
-    setUser(data.user || { id: null, firstName: "Guest", isAdmin: false });
+      if (!response.ok) {
+        throw new Error(data.message || "Unauthorized access.");
+      }
 
-    notyf.success("Login successful! Redirecting...");
-    setTimeout(() => {
+      console.log("User profile loaded:", data.user);
+
+      // ✅ Update global user state
+      setUser(data.user);
+      notyf.success("Login successful!");
       navigate("/");
-    }, 1000);
-  } catch (err) {
-    setError(err.message);
-    notyf.error(err.message);
-  }
-};
+    } catch (error) {
+      console.error("Profile Fetch Error:", error);
+      setError("Failed to load profile.");
+      notyf.error("Error loading profile.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
-      {/* Background Wrapper with Blur & Dark Overlay */}
       <div
         style={{
           position: "relative",
@@ -69,7 +107,6 @@ const Login = () => {
           background: `url("https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Boracay_White_Beach.png/1200px-Boracay_White_Beach.png") no-repeat center center/cover`,
         }}
       >
-        {/* Dark Overlay with Blur */}
         <div
           style={{
             position: "absolute",
@@ -77,18 +114,16 @@ const Login = () => {
             left: 0,
             width: "100%",
             height: "100%",
-            backgroundColor: "rgba(0, 0, 0, 0.5)", // Darken effect
-            backdropFilter: "blur(5px)", // Blur effect
-            zIndex: 1, // Ensures it stays above background
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            backdropFilter: "blur(5px)",
+            zIndex: 1,
           }}
         />
-
-        {/* Login Card */}
         <Card
           style={{
             width: "400px",
             backgroundColor: "rgba(255, 255, 255, 0.95)",
-            zIndex: 2, // Ensures form stays above overlay
+            zIndex: 2,
           }}
           className="shadow p-4"
         >
@@ -117,23 +152,25 @@ const Login = () => {
               />
             </Form.Group>
 
-            <Button variant="warning" type="submit" className="w-100 fw-bold">
-              Login
+            <Button variant="warning" type="submit" className="w-100 fw-bold" disabled={loading}>
+              {loading ? <Spinner size="sm" animation="border" /> : "Login"}
             </Button>
           </Form>
 
+          {/* "No account? Sign up" section */}
           <div className="text-center mt-3">
             <p>
-              Don't have an account?{" "}
-              <a href="/register" style={{ textDecoration: "none", color: "#333", fontWeight: "bold" }}>
-                Sign Up
-              </a>
+              No account yet?{" "}
+              <span
+                style={{ color: "blue", cursor: "pointer", textDecoration: "underline" }}
+                onClick={() => navigate("/register")}
+              >
+                Sign up now!
+              </span>
             </p>
           </div>
         </Card>
       </div>
-
-      {/* Footer Appears Below */}
       <Footer />
     </>
   );

@@ -1,84 +1,78 @@
-import './App.css';
-import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import React, { useEffect, useContext } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import AppNavbar from "./components/AppNavbar";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Logout from "./pages/Logout";
+import Register from "./pages/Register";
+import Profile from "./pages/Profile";
+import Bookings from "./pages/Bookings";
+import BookPage from "./pages/BookPage";
+import ContactPage from "./pages/ContactPage";
+import ViewFlight from "./pages/ViewFlight";
+import Error from "./pages/Error";
+import { UserProvider } from "./UserContext";
+import UserContext from "./UserContext";
 
-import AppNavbar from './components/AppNavbar';
-import Register from './pages/Register';
-import Login from './pages/Login';
-import Logout from './pages/Logout';
-import { UserProvider } from './UserContext';
-import Home from './pages/Home';
-import ViewFlight from './pages/ViewFlight';
-import BookPage from './pages/BookPage';
-import ContactPage from './pages/ContactPage';
-import Bookings from './pages/Bookings';
-import Profile from './pages/Profile';  // ✅ Import Profile Page
-import Error from './pages/Error';
+const AppContent = () => {
+  const { user, setUser } = useContext(UserContext);
 
-function App() {
-    const [user, setUser] = useState(() => {
-        const storedUser = localStorage.getItem("user");
-        return storedUser ? JSON.parse(storedUser) : { id: null, firstName: "", isAdmin: null };
-    });
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
 
-    const unsetUser = () => {
-        setUser({ id: null, firstName: "", isAdmin: null });
-        localStorage.removeItem("token"); 
-        localStorage.removeItem("user");  
+      try {
+        const response = await fetch("https://airisle-api-3.onrender.com/users/user-profile", {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setUser(data.user);
+          localStorage.setItem("user", JSON.stringify(data.user)); // ✅ Store user in local storage
+        } else {
+          console.error("Failed to fetch user profile");
+          setUser(null);
+        }
+      } catch (error) {
+        console.error("Error fetching user:", error);
+        setUser(null);
+      }
     };
 
-    useEffect(() => {
-        const token = localStorage.getItem('token');
+    fetchUserProfile();
+  }, [setUser]);
 
-        if (!token) {
-            console.log("No token found in localStorage");
-            return;
-        }
+  return (
+    <Router>
+      <AppNavbar />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
+        <Route path="/logout" element={<Logout />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
+        <Route path="/bookings" element={user ? <Bookings /> : <Navigate to="/login" />} />
+        <Route path="/book" element={<BookPage />} />
+        <Route path="/book/:id" element={user ? <BookPage /> : <Navigate to="/login" />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/view-flight" element={<ViewFlight />} />
+        <Route path="/view-flight/:id" element={user ? <ViewFlight /> : <Navigate to="/login" />} />
+        <Route path="*" element={<Error />} />
+      </Routes>
+    </Router>
+  );
+};
 
-        fetch("https://airisle-api-3.onrender.com/users/user-profile", {
-            headers: { Authorization: `Bearer ${token}` }
-        })
-        .then(res => res.json())
-        .then(data => {
-            console.log("User Details Response:", data);
-
-            if (data.user) {
-                const newUser = {
-                    id: data.user._id,
-                    firstName: data.user.firstName,
-                    isAdmin: data.user.isAdmin
-                };
-                setUser(newUser);
-                localStorage.setItem("user", JSON.stringify(newUser));
-            } else {
-                unsetUser();
-            }
-        })
-        .catch(error => {
-            console.error("Error fetching user details:", error);
-            unsetUser();
-        });
-    }, []);
-
-    return (
-        <UserProvider value={{ user, setUser, unsetUser }}>
-            <Router>
-                <AppNavbar />
-                <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/logout" element={<Logout />} />
-                    <Route path="/flight/:id" element={<ViewFlight />} />
-                    <Route path="/book/:id" element={<BookPage />} />
-                    <Route path="/bookings" element={<Bookings />} />
-                    <Route path="/profile" element={<Profile />} />  {/* ✅ Added Profile Route */}
-                    <Route path="/contact" element={<ContactPage />} />
-                    <Route path="*" element={<Error />} />
-                </Routes>
-            </Router>
-        </UserProvider>
-    );
-}
+const App = () => (
+  <UserProvider>
+    <AppContent />
+  </UserProvider>
+);
 
 export default App;

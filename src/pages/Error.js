@@ -3,15 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { Container, Card, Button } from "react-bootstrap";
 import { FaPlaneDeparture, FaHome } from "react-icons/fa";
 import Footer from "../components/Footer";
-import AppNavbar from "../components/AppNavbar";
 
 const Error = () => {
   const navigate = useNavigate();
 
   return (
     <>
-      <AppNavbar />
-
       {/* Background Wrapper */}
       <div
         style={{
@@ -22,6 +19,8 @@ const Error = () => {
           justifyContent: "center",
           padding: "20px",
           background: `url("https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Boracay_White_Beach.png/1200px-Boracay_White_Beach.png") no-repeat center center/cover`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
         }}
       >
         {/* Dark Overlay */}
@@ -60,10 +59,20 @@ const Error = () => {
             <FaPlaneDeparture size={50} className="text-warning my-3" />
 
             {/* Navigation Buttons */}
-            <Button variant="dark" className="fw-bold w-100 mb-2" onClick={() => navigate("/")}>
+            <Button
+              variant="dark"
+              className="fw-bold w-100 mb-2"
+              onClick={() => navigate("/")}
+              aria-label="Back to Home"
+            >
               <FaHome className="me-2" /> Back to Home
             </Button>
-            <Button variant="warning" className="fw-bold w-100" onClick={() => navigate("/book/flights")}>
+            <Button
+              variant="warning"
+              className="fw-bold w-100"
+              onClick={() => navigate("/book/flights")}
+              aria-label="Book a Flight"
+            >
               Book a Flight
             </Button>
           </Card>

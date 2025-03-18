@@ -3,24 +3,27 @@ import { useNavigate } from "react-router-dom";
 import UserContext from "../UserContext"; // ✅ Ensure correct import path
 
 export default function Logout() {
-  const { unsetUser } = useContext(UserContext);
+  const { setUser } = useContext(UserContext); // ✅ Use setUser from context
   const navigate = useNavigate();
 
   useEffect(() => {
-    try {
-      // ✅ Clear authentication data
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+    const handleLogout = () => {
+      try {
+        // ✅ Clear authentication data
+        localStorage.removeItem("token");
 
-      // ✅ Reset UserContext
-      unsetUser();
+        // ✅ Reset global user state
+        setUser(null);
 
-      // ✅ Redirect to home & prevent back navigation
-      navigate("/", { replace: true });
-    } catch (error) {
-      console.error("Error during logout:", error);
-    }
-  }, [unsetUser, navigate]); // ✅ Dependencies to avoid unnecessary re-renders
+        // ✅ Redirect to login & prevent back navigation
+        navigate("/login", { replace: true });
+      } catch (error) {
+        console.error("Error during logout:", error);
+      }
+    };
+
+    handleLogout();
+  }, [setUser, navigate]); // ✅ Dependencies to ensure effect runs once
 
   return null; // No UI needed
 }

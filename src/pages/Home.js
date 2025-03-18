@@ -6,14 +6,21 @@ import { Notyf } from "notyf";
 import "notyf/notyf.min.css"; // ✅ Import Notyf CSS
 import travelerImage from "../images/travel.png";
 import newsData from "../mockdata/storiesMockData.json";
-import AppNavbar from "../components/AppNavbar";
 import Footer from "../components/Footer";
-import UserContext from "../UserContext";
+import UserContext from "../UserContext"; // ✅ Import UserContext
+
+const notyf = new Notyf({
+  duration: 3000,
+  position: { x: "right", y: "top" },
+  types: [
+    { type: "error", background: "red", icon: false },
+    { type: "success", background: "green", icon: false },
+  ],
+});
 
 const Home = () => {
-  const { user } = useContext(UserContext);
+  const { user } = useContext(UserContext); // ✅ Use UserContext instead of prop drilling
   const navigate = useNavigate();
-  const notyf = new Notyf();
 
   const [from, setFrom] = useState("Manila");
   const [to, setTo] = useState("");
@@ -21,9 +28,10 @@ const Home = () => {
   const [flights, setFlights] = useState([]);
   const [message, setMessage] = useState("Search your flight now!");
 
+  // Handle Flight Search
   const handleSearch = async () => {
     if (!from || !to || !date) {
-      alert("Please fill in all fields");
+      notyf.error("Please fill in all fields.");
       return;
     }
 
@@ -40,7 +48,7 @@ const Home = () => {
 
       if (Array.isArray(data)) {
         setFlights(data.slice(0, 6));
-        setMessage(data.length > 0 ? "Available Flights:" : "No flights found");
+        setMessage(data.length > 0 ? "Available Flights:" : "No flights found.");
       } else {
         setFlights([]);
         setMessage("Invalid response from server.");
@@ -52,21 +60,18 @@ const Home = () => {
     }
   };
 
-   const goToFlightDetails = (flight) => {
-    if (!user.id) {
+  // Redirect to Flight Details or Login if Not Logged In
+  const goToFlightDetails = (flight) => {
+    if (!user) {
       notyf.error("You must be logged in to view flight details. Redirecting...");
-      setTimeout(() => {
-        navigate("/login");
-      }, 2000); // Redirect after 2 seconds
+      setTimeout(() => navigate("/login"), 1500);
       return;
     }
-    navigate(`/flight/${flight._id}`);
+    navigate(`/view-flight/${flight._id}`);
   };
-
 
   return (
     <>
-
       <Container className="mt-4">
         <h1 className="text-center fw-bold">Welcome to SkyIsles Airline</h1>
         <p className="text-center">Book your next adventure with us and explore new destinations!</p>
@@ -87,9 +92,9 @@ const Home = () => {
                 <Button variant="light" disabled>
                   <FaCalendarAlt />
                 </Button>
-                <Form.Control type="date" value={date} onChange={(e) => setDate(e.target.value)} />             
-                </InputGroup>
-              <Button variant="warning" className="w-100" onClick={handleSearch}>SEARCH FLIGHTS</Button>
+                <Form.Control type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+              </InputGroup>
+              <Button variant="warning" className="w-100 fw-bold" onClick={handleSearch}>SEARCH FLIGHTS</Button>
             </Form>
           </Card.Body>
         </Card>
@@ -130,16 +135,12 @@ const Home = () => {
         <Container>
           <Row className="align-items-center">
             <Col md={6}>
-              <h3 className="fw-bold text-center">Why Do we Need to Travel?</h3>
-              <p className="text-justify">
-                Traveling enriches our lives by exposing us to new cultures, experiences, and perspectives.
-                Whether for leisure, business, or personal growth, it allows us to break from routine, build
-                connections, and create lasting memories.
-              </p>
+              <h3 className="fw-bold text-center">Why Do We Need to Travel?</h3>
+              <p>Traveling enriches our lives by exposing us to new cultures, experiences, and perspectives.</p>
             </Col>
             <Col md={6} className="text-center">
               <img src={travelerImage} alt="Traveler at airport" className="img-fluid rounded"
-                style={{ maxHeight: "250px", borderRadius: "5px", border: "4px solid #FFD700" }} />
+                   style={{ maxHeight: "250px", borderRadius: "5px", border: "4px solid #FFD700" }} />
             </Col>
           </Row>
         </Container>
@@ -173,9 +174,6 @@ const NewsSection = () => {
         {newsData.slice(0, visibleCount).map((news, index) => (
           <Col md={4} key={index} className="mb-3">
             <Card className="border-0">
-              <div className="bg-light d-flex align-items-center justify-content-center" style={{ height: "150px" }}>
-                <img src={news.image} alt={news.title} className="img-fluid" style={{ maxHeight: "150px", objectFit: "cover" }} />
-              </div>
               <Card.Body>
                 <Card.Title className="fw-bold">{news.title}</Card.Title>
                 <Card.Text>{news.description}</Card.Text>

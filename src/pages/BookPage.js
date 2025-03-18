@@ -1,17 +1,18 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Container, Form, Button, Card, Row, Col } from "react-bootstrap";
+import { Container, Form, Button, Card } from "react-bootstrap";
 import { Notyf } from "notyf";
 import "notyf/notyf.min.css";
 import Footer from "../components/Footer";
-import UserContext from "../UserContext";
+import UserContext from "../UserContext"; // ✅ Import UserContext
 
 const Book = () => {
   const { id: flightId } = useParams(); // Get flight ID from URL
   const navigate = useNavigate();
-  const { user } = useContext(UserContext); // Get user context
+  const { user } = useContext(UserContext); // ✅ Use UserContext
   const notyf = new Notyf();
 
+  const [loading, setLoading] = useState(false);
   const [passengers, setPassengers] = useState([
     {
       fullName: "",
@@ -28,12 +29,30 @@ const Book = () => {
   const [totalPrice, setTotalPrice] = useState(500);
   const [bookingStatus] = useState("Pending");
 
+  // ✅ Redirect user if flightId is missing
   useEffect(() => {
-    // Calculate total price dynamically based on passenger fees
+    console.log("Booking Flight ID:", flightId);
+    if (!flightId) {
+      notyf.error("Invalid flight selection.");
+      setTimeout(() => navigate("/"), 3000);
+    }
+  }, [flightId, navigate]);
+
+  // ✅ Redirect user to login if not authenticated
+  useEffect(() => {
+    if (!user) {
+      notyf.error("You must be logged in to book a flight.");
+      setTimeout(() => navigate("/login"), 2000);
+    }
+  }, [user, navigate]);
+
+  // ✅ Calculate total price dynamically
+  useEffect(() => {
     const total = passengers.reduce((sum, p) => sum + parseFloat(p.passengerFee || 0), 0);
     setTotalPrice(total);
   }, [passengers]);
 
+  // ✅ Add a new passenger
   const handleAddPassenger = () => {
     setPassengers([
       ...passengers,
@@ -49,6 +68,7 @@ const Book = () => {
     ]);
   };
 
+  // ✅ Remove a passenger
   const handleRemovePassenger = (index) => {
     if (passengers.length > 1) {
       const updatedPassengers = passengers.filter((_, i) => i !== index);
@@ -58,13 +78,13 @@ const Book = () => {
     }
   };
 
+  // ✅ Handle input changes and update passenger fee
   const handlePassengerChange = (e, index) => {
     const { name, value } = e.target;
     const updatedPassengers = [...passengers];
-    
+
     updatedPassengers[index][name] = value;
 
-    // Update passenger fee based on flight type selection
     if (name === "passengerFlightType") {
       const fees = { Economy: 500, Business: 1000, "First Class": 1500 };
       updatedPassengers[index].passengerFee = fees[value] || 500;
@@ -73,13 +93,31 @@ const Book = () => {
     setPassengers(updatedPassengers);
   };
 
+  // ✅ Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
-    if (!user.id) {
+    if (!user?.id) {
       notyf.error("You must be logged in to book a flight.");
       setTimeout(() => navigate("/login"), 2000);
+      setLoading(false);
       return;
+    }
+
+    if (!flightId) {
+      notyf.error("Invalid flight selection.");
+      setLoading(false);
+      return;
+    }
+
+    // ✅ Validate passenger details before submitting
+    for (const passenger of passengers) {
+      if (!passenger.fullName || !passenger.passengerAddress || !passenger.passengerEmail || !passenger.passengerCpNo) {
+        notyf.error("All passenger fields must be filled.");
+        setLoading(false);
+        return;
+      }
     }
 
     const bookingData = {
@@ -114,6 +152,8 @@ const Book = () => {
     } catch (err) {
       console.error("Error during booking:", err);
       notyf.error(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -152,44 +192,11 @@ const Book = () => {
                   </Form.Group>
 
                   <Form.Group className="mb-3">
-                    <Form.Label>Address</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="passengerAddress"
-                      value={passenger.passengerAddress}
-                      onChange={(e) => handlePassengerChange(e, index)}
-                      required
-                    />
-                  </Form.Group>
-
-                  <Form.Group className="mb-3">
-                    <Form.Label>Age</Form.Label>
-                    <Form.Control
-                      type="number"
-                      name="passengerAge"
-                      value={passenger.passengerAge}
-                      onChange={(e) => handlePassengerChange(e, index)}
-                      required
-                    />
-                  </Form.Group>
-
-                  <Form.Group className="mb-3">
                     <Form.Label>Email</Form.Label>
                     <Form.Control
                       type="email"
                       name="passengerEmail"
                       value={passenger.passengerEmail}
-                      onChange={(e) => handlePassengerChange(e, index)}
-                      required
-                    />
-                  </Form.Group>
-
-                  <Form.Group className="mb-3">
-                    <Form.Label>Contact Number</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="passengerCpNo"
-                      value={passenger.passengerCpNo}
                       onChange={(e) => handlePassengerChange(e, index)}
                       required
                     />
@@ -219,8 +226,8 @@ const Book = () => {
                 <Button variant="secondary" className="me-3" onClick={handleAddPassenger}>
                   Add Another Passenger
                 </Button>
-                <Button variant="warning" type="submit">
-                  Complete Booking
+                <Button variant="warning" type="submit" disabled={loading}>
+                  {loading ? "Processing..." : "Complete Booking"}
                 </Button>
               </div>
             </Form>

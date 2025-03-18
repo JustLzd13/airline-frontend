@@ -1,28 +1,49 @@
 import React, { useEffect, useState, useContext } from "react";
 import { Container, Card, Button, Spinner, Alert, Row, Col, Badge } from "react-bootstrap";
 import { FaPlane, FaCalendarAlt, FaUsers, FaMoneyBillWave, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
-import UserContext from "../UserContext";
+import { useNavigate } from "react-router-dom";
+import UserContext from "../UserContext"; // ✅ Import UserContext
 import Footer from "../components/Footer";
+import { Notyf } from "notyf";
+import "notyf/notyf.min.css";
+
+const notyf = new Notyf({
+  duration: 3000,
+  position: { x: "right", y: "top" },
+  types: [
+    { type: "error", background: "red", icon: false },
+    { type: "success", background: "green", icon: false },
+  ],
+});
 
 const Bookings = () => {
-  const { user } = useContext(UserContext);
+  const { user } = useContext(UserContext); // ✅ Use UserContext
+  const navigate = useNavigate();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // ✅ Redirect user if not logged in
+  useEffect(() => {
+    console.log("User context in Bookings.js:", user);
+    
+    if (!user || !user._id) {  // ✅ Ensure user._id exists
+      notyf.error("You must be logged in to view your bookings.");
+      setTimeout(() => navigate("/login"), 2000);
+    }
+  }, [user, navigate]);
+
+
   useEffect(() => {
     const fetchBookings = async () => {
-      if (!user.id) {
-        setError("You must be logged in to view your bookings.");
-        setLoading(false);
-        return;
-      }
+       console.log("User context in Bookings.js:", user); // ✅ Debugging line
+      
 
       const token = localStorage.getItem("token"); // ✅ Get token from localStorage
 
       try {
         const response = await fetch(
-          `https://airisle-api-3.onrender.com/booking/user?userId=${user.id}`,
+          `https://airisle-api-3.onrender.com/booking/user?userId=${user._id}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -36,17 +57,21 @@ const Bookings = () => {
         }
 
         const data = await response.json();
+        if (!Array.isArray(data)) {
+          throw new Error("Unexpected response from server.");
+        }
+
         setBookings(data);
       } catch (err) {
         console.error("Error fetching bookings:", err);
-        setError("Failed to retrieve bookings. Please try again.");
+        setError("No Bookings Yet.");
       } finally {
         setLoading(false);
       }
     };
 
     fetchBookings();
-  }, [user.id]);
+  }, [user?.id]);
 
   if (loading) {
     return <Spinner animation="border" className="d-block mx-auto mt-5" />;
@@ -71,7 +96,7 @@ const Bookings = () => {
                     <h5 className="fw-bold text-center">Booking ID: {booking._id}</h5>
                     <p className="text-center text-muted">Flight ID: {booking.flightId}</p>
                     <p className="text-center">
-                      <FaCalendarAlt className="me-2 text-success" /> Booking Date: {booking.bookingDate}
+                      <FaCalendarAlt className="me-2 text-success" /> Booking Date: {new Date(booking.bookingDate).toLocaleDateString()}
                     </p>
                     <p className="text-center">
                       <FaUsers className="me-2 text-primary" /> Passengers: {booking.passengers.length}
@@ -91,7 +116,12 @@ const Bookings = () => {
               </Col>
             ))
           ) : (
-            <p className="text-center text-muted">No bookings found.</p>
+            <div className="text-center mt-5">
+              <h5 className="text-muted">No bookings found.</h5>
+              <Button variant="warning" className="mt-3" onClick={() => navigate("/book")}>
+                Book a Flight Now
+              </Button>
+            </div>
           )}
         </Row>
       </Container>
