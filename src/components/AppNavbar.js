@@ -10,6 +10,7 @@ const AppNavbar = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("token"); // ✅ Clear token
+    localStorage.removeItem("user"); // ✅ Ensure user is removed from local storage
     setUser(null); // ✅ Reset user state
     navigate("/login"); // ✅ Redirect to login page
   };
@@ -30,10 +31,12 @@ const AppNavbar = () => {
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="ms-auto">
-            {/* BOOK Section */}
-            <NavDropdown title="BOOK" id="book-dropdown">
-              <NavDropdown.Item as={Link} to="/bookings">Bookings</NavDropdown.Item>
-            </NavDropdown>
+            {/* BOOK Section - Hidden for Admins */}
+            {!user?.isAdmin && (
+              <NavDropdown title="BOOK" id="book-dropdown">
+                <NavDropdown.Item as={Link} to="/bookings">Bookings</NavDropdown.Item>
+              </NavDropdown>
+            )}
 
             {/* MANAGE Section */}
             <NavDropdown title="MANAGE" id="manage-dropdown">
@@ -58,6 +61,15 @@ const AppNavbar = () => {
               <NavDropdown.Item as={Link} to="/about/partnerships">Partnerships</NavDropdown.Item>
               <NavDropdown.Item as={Link} to="/contact">Contact Page</NavDropdown.Item>
             </NavDropdown>
+
+            {/* ADMIN SECTION - Only visible if user.isAdmin is true */}
+            {user?.isAdmin && (
+              <NavDropdown title="ADMIN" id="admin-dropdown">
+                <NavDropdown.Item as={Link} to="/admin/add-flight">
+                  Admin Dashboard ✈️
+                </NavDropdown.Item>
+              </NavDropdown>
+            )}
 
             {/* LOGIN / LOGOUT Section */}
             <Nav className="d-flex align-items-center">

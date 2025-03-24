@@ -1,29 +1,30 @@
 import { useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import UserContext from "../UserContext"; // ✅ Ensure correct import path
+import UserContext from "../UserContext";
 
-export default function Logout() {
-  const { setUser } = useContext(UserContext); // ✅ Use setUser from context
+const Logout = () => {
+  const { setUser } = useContext(UserContext);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const handleLogout = () => {
-      try {
-        // ✅ Clear authentication data
-        localStorage.removeItem("token");
+    console.log("Logging out..."); // ✅ Debugging
 
-        // ✅ Reset global user state
-        setUser(null);
+    // ✅ Clear localStorage & sessionStorage
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    sessionStorage.clear(); // Force session reset
 
-        // ✅ Redirect to login & prevent back navigation
-        navigate("/login", { replace: true });
-      } catch (error) {
-        console.error("Error during logout:", error);
-      }
-    };
+    // ✅ Reset user state
+    setUser(null);
 
-    handleLogout();
-  }, [setUser, navigate]); // ✅ Dependencies to ensure effect runs once
+    // ✅ Force page reload to clear state completely
+    setTimeout(() => {
+      navigate("/");
+      window.location.reload(); // ✅ Reload to reset React state
+    }, 500);
+  }, [navigate, setUser]);
 
-  return null; // No UI needed
-}
+  return null;
+};
+
+export default Logout;

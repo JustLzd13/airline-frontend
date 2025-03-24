@@ -15,18 +15,21 @@ import { UserProvider } from "./UserContext";
 import UserContext from "./UserContext";
 
 const AppContent = () => {
-  const { user, setUser } = useContext(UserContext);
+  const { user, loading, setUser } = useContext(UserContext);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
       const token = localStorage.getItem("token");
-      if (!token) return;
+      if (!token) {
+        setUser(null);
+        return;
+      }
 
       try {
         const response = await fetch("https://airisle-api-3.onrender.com/users/user-profile", {
           method: "GET",
           headers: {
-            "Authorization": `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         });
@@ -34,19 +37,22 @@ const AppContent = () => {
         if (response.ok) {
           const data = await response.json();
           setUser(data.user);
-          localStorage.setItem("user", JSON.stringify(data.user)); // ✅ Store user in local storage
+          localStorage.setItem("user", JSON.stringify(data.user));
         } else {
-          console.error("Failed to fetch user profile");
           setUser(null);
+          localStorage.removeItem("token");
         }
       } catch (error) {
         console.error("Error fetching user:", error);
         setUser(null);
+        localStorage.removeItem("token");
       }
     };
 
     fetchUserProfile();
   }, [setUser]);
+
+  if (loading) return null; // ✅ Prevents flashing and premature redirects
 
   return (
     <Router>

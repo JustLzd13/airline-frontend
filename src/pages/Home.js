@@ -3,11 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { Container, Form, Button, InputGroup, Card, Row, Col } from "react-bootstrap";
 import { FaExchangeAlt, FaCalendarAlt } from "react-icons/fa";
 import { Notyf } from "notyf";
-import "notyf/notyf.min.css"; // ✅ Import Notyf CSS
+import "notyf/notyf.min.css";
 import travelerImage from "../images/travel.png";
 import newsData from "../mockdata/storiesMockData.json";
 import Footer from "../components/Footer";
-import UserContext from "../UserContext"; // ✅ Import UserContext
+import UserContext from "../UserContext";
+import flightLocations from "../mockdata/flightLocations"; // Import flight locations
 
 const notyf = new Notyf({
   duration: 3000,
@@ -19,16 +20,15 @@ const notyf = new Notyf({
 });
 
 const Home = () => {
-  const { user } = useContext(UserContext); // ✅ Use UserContext instead of prop drilling
+  const { user } = useContext(UserContext);
   const navigate = useNavigate();
 
-  const [from, setFrom] = useState("Manila");
+  const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [date, setDate] = useState("");
   const [flights, setFlights] = useState([]);
   const [message, setMessage] = useState("Search your flight now!");
 
-  // Handle Flight Search
   const handleSearch = async () => {
     if (!from || !to || !date) {
       notyf.error("Please fill in all fields.");
@@ -60,7 +60,6 @@ const Home = () => {
     }
   };
 
-  // Redirect to Flight Details or Login if Not Logged In
   const goToFlightDetails = (flight) => {
     if (!user) {
       notyf.error("You must be logged in to view flight details. Redirecting...");
@@ -82,11 +81,21 @@ const Home = () => {
             <h4 className="text-center">Search for Flights</h4>
             <Form>
               <InputGroup className="mb-3">
-                <Form.Control type="text" value={from} onChange={(e) => setFrom(e.target.value)} />
+                <Form.Select value={from} onChange={(e) => setFrom(e.target.value)}>
+                  <option value="">Select departure...</option>
+                  {flightLocations.map((location) => (
+                    <option key={location.value} value={location.value}>{location.label}</option>
+                  ))}
+                </Form.Select>
                 <Button variant="light" onClick={() => { setFrom(to); setTo(from); }}>
                   <FaExchangeAlt />
                 </Button>
-                <Form.Control type="text" placeholder="Select destination..." value={to} onChange={(e) => setTo(e.target.value)} />
+                <Form.Select value={to} onChange={(e) => setTo(e.target.value)}>
+                  <option value="">Select destination...</option>
+                  {flightLocations.map((location) => (
+                    <option key={location.value} value={location.value}>{location.label}</option>
+                  ))}
+                </Form.Select>
               </InputGroup>
               <InputGroup className="mb-3">
                 <Button variant="light" disabled>
@@ -136,15 +145,32 @@ const Home = () => {
           <Row className="align-items-center">
             <Col md={6}>
               <h3 className="fw-bold text-center">Why Do We Need to Travel?</h3>
-              <p>Traveling enriches our lives by exposing us to new cultures, experiences, and perspectives.</p>
+              <p>
+                Traveling enriches our lives by exposing us to new cultures, experiences, and perspectives. 
+                It allows us to step out of our comfort zones, meet people from different backgrounds, 
+                and gain a deeper understanding of the world. Whether it's exploring breathtaking landscapes, 
+                indulging in diverse cuisines, or learning about historical landmarks, each journey 
+                provides invaluable lessons and unforgettable memories.
+              </p>
+              <p>
+                Beyond leisure, travel also promotes personal growth by enhancing adaptability, patience, 
+                and problem-solving skills. It helps us appreciate the beauty of diversity while fostering 
+                a sense of global unity. So, whether you're seeking adventure, relaxation, or self-discovery, 
+                travel is an essential part of life's journey.
+              </p>
             </Col>
             <Col md={6} className="text-center">
-              <img src={travelerImage} alt="Traveler at airport" className="img-fluid rounded"
-                   style={{ maxHeight: "250px", borderRadius: "5px", border: "4px solid #FFD700" }} />
+              <img 
+                src={travelerImage} 
+                alt="Traveler at airport" 
+                className="img-fluid rounded"
+                style={{ maxHeight: "250px", borderRadius: "5px", border: "4px solid #FFD700" }} 
+              />
             </Col>
           </Row>
         </Container>
       </div>
+
 
       {/* News Section */}
       <div className="mt-4">
@@ -158,7 +184,6 @@ const Home = () => {
   );
 };
 
-// News Section with Show More / Show Less
 const NewsSection = () => {
   const [visibleCount, setVisibleCount] = useState(3);
   const [expanded, setExpanded] = useState(false);
@@ -173,7 +198,17 @@ const NewsSection = () => {
       <Row className="justify-content-center">
         {newsData.slice(0, visibleCount).map((news, index) => (
           <Col md={4} key={index} className="mb-3">
-            <Card className="border-0">
+            <Card className="border-0 shadow-sm">
+              <Card.Img 
+                variant="top" 
+                src={news.image} 
+                alt={news.title} 
+                style={{ 
+                  height: "200px",  // Fixed height
+                  width: "100%",     // Full width of the card
+                  objectFit: "cover" // Ensures the image is properly cropped
+                }} 
+              />
               <Card.Body>
                 <Card.Title className="fw-bold">{news.title}</Card.Title>
                 <Card.Text>{news.description}</Card.Text>
@@ -191,5 +226,6 @@ const NewsSection = () => {
     </>
   );
 };
+
 
 export default Home;

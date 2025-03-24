@@ -21,17 +21,16 @@ const Book = () => {
       passengerEmail: "",
       passengerCpNo: "",
       passengerFlightType: "Economy",
-      passengerFee: 500, // Default for economy
+      passengerFee: 3000, // Default for economy
     },
   ]);
 
   const [bookingDate] = useState(new Date().toISOString().split("T")[0]);
-  const [totalPrice, setTotalPrice] = useState(500);
+  const [totalPrice, setTotalPrice] = useState(3000);
   const [bookingStatus] = useState("Pending");
 
   // ✅ Redirect user if flightId is missing
   useEffect(() => {
-    console.log("Booking Flight ID:", flightId);
     if (!flightId) {
       notyf.error("Invalid flight selection.");
       setTimeout(() => navigate("/"), 3000);
@@ -86,8 +85,8 @@ const Book = () => {
     updatedPassengers[index][name] = value;
 
     if (name === "passengerFlightType") {
-      const fees = { Economy: 500, Business: 1000, "First Class": 1500 };
-      updatedPassengers[index].passengerFee = fees[value] || 500;
+      const fees = { Economy: 3000, Business: 4500, "First Class": 5000 };
+      updatedPassengers[index].passengerFee = fees[value] || 3000;
     }
 
     setPassengers(updatedPassengers);
@@ -98,7 +97,7 @@ const Book = () => {
     e.preventDefault();
     setLoading(true);
 
-    if (!user?.id) {
+    if (!user?._id) {
       notyf.error("You must be logged in to book a flight.");
       setTimeout(() => navigate("/login"), 2000);
       setLoading(false);
@@ -113,7 +112,7 @@ const Book = () => {
 
     // ✅ Validate passenger details before submitting
     for (const passenger of passengers) {
-      if (!passenger.fullName || !passenger.passengerAddress || !passenger.passengerEmail || !passenger.passengerCpNo) {
+      if (!passenger.fullName || !passenger.passengerAddress || !passenger.passengerEmail || !passenger.passengerCpNo || !passenger.passengerAge) {
         notyf.error("All passenger fields must be filled.");
         setLoading(false);
         return;
@@ -121,7 +120,7 @@ const Book = () => {
     }
 
     const bookingData = {
-      userId: user.id,
+      userId: user._id,
       flightId: flightId,
       passengers: passengers,
       bookingDate: bookingDate,
@@ -144,7 +143,7 @@ const Book = () => {
       if (response.ok) {
         notyf.success("Booking successful! Redirecting...");
         setTimeout(() => {
-          navigate("/");
+          navigate("/bookings");
         }, 2000);
       } else {
         throw new Error(data.message || "Booking failed.");
@@ -180,55 +179,53 @@ const Book = () => {
               {passengers.map((passenger, index) => (
                 <Card key={index} className="mb-3 p-3 shadow-sm">
                   <h5 className="text-center fw-bold">Passenger {index + 1}</h5>
+                  
                   <Form.Group className="mb-3">
                     <Form.Label>Full Name</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="fullName"
-                      value={passenger.fullName}
-                      onChange={(e) => handlePassengerChange(e, index)}
-                      required
-                    />
+                    <Form.Control type="text" name="fullName" value={passenger.fullName} onChange={(e) => handlePassengerChange(e, index)} required />
+                  </Form.Group>
+
+                  <Form.Group className="mb-3">
+                    <Form.Label>Address</Form.Label>
+                    <Form.Control type="text" name="passengerAddress" value={passenger.passengerAddress} onChange={(e) => handlePassengerChange(e, index)} required />
+                  </Form.Group>
+
+                  <Form.Group className="mb-3">
+                    <Form.Label>Age</Form.Label>
+                    <Form.Control type="number" name="passengerAge" value={passenger.passengerAge} onChange={(e) => handlePassengerChange(e, index)} required />
                   </Form.Group>
 
                   <Form.Group className="mb-3">
                     <Form.Label>Email</Form.Label>
-                    <Form.Control
-                      type="email"
-                      name="passengerEmail"
-                      value={passenger.passengerEmail}
-                      onChange={(e) => handlePassengerChange(e, index)}
-                      required
-                    />
+                    <Form.Control type="email" name="passengerEmail" value={passenger.passengerEmail} onChange={(e) => handlePassengerChange(e, index)} required />
                   </Form.Group>
 
                   <Form.Group className="mb-3">
-                    <Form.Label>Flight Type</Form.Label>
-                    <Form.Select
-                      name="passengerFlightType"
-                      value={passenger.passengerFlightType}
-                      onChange={(e) => handlePassengerChange(e, index)}
-                      required
-                    >
-                      <option value="Economy">Economy - $500</option>
-                      <option value="Business">Business - $1000</option>
-                      <option value="First Class">First Class - $1500</option>
-                    </Form.Select>
+                    <Form.Label>Contact Number</Form.Label>
+                    <Form.Control type="text" name="passengerCpNo" value={passenger.passengerCpNo} onChange={(e) => handlePassengerChange(e, index)} required />
                   </Form.Group>
 
-                  <Button variant="danger" size="sm" onClick={() => handleRemovePassenger(index)}>
-                    Remove Passenger
-                  </Button>
+                  <Form.Group className="mb-3">
+                   <Form.Label>Flight Type</Form.Label>
+                   <Form.Select
+                     name="passengerFlightType"
+                     value={passenger.passengerFlightType}
+                     onChange={(e) => handlePassengerChange(e, index)}
+                     required
+                   >
+                     <option value="Economy">Economy - ₱3000</option>
+                     <option value="Business">Business - ₱4500</option>
+                     <option value="First Class">First Class - ₱5000</option>
+                   </Form.Select>
+                 </Form.Group>
+
+                  <Button variant="danger" size="sm" onClick={() => handleRemovePassenger(index)}>Remove Passenger</Button>
                 </Card>
               ))}
 
               <div className="text-center">
-                <Button variant="secondary" className="me-3" onClick={handleAddPassenger}>
-                  Add Another Passenger
-                </Button>
-                <Button variant="warning" type="submit" disabled={loading}>
-                  {loading ? "Processing..." : "Complete Booking"}
-                </Button>
+                <Button variant="secondary" className="me-3" onClick={handleAddPassenger}>Add Another Passenger</Button>
+                <Button variant="warning" type="submit" disabled={loading}>{loading ? "Processing..." : "Complete Booking"}</Button>
               </div>
             </Form>
           </Card.Body>

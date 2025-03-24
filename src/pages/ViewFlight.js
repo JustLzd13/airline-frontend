@@ -130,13 +130,13 @@ const ViewFlight = () => {
                   </Col>
                   <Col md={6}>
                     <h5><FaClock className="me-2 text-info" /> Departure Time</h5>
-                    <p className="fw-bold">{formatTime(flight.departureTime)}</p>
+                    <p className="fw-bold">{flight.departureTime}</p>
                   </Col>
                 </Row>
                 <Row className="text-center mt-3">
                   <Col md={6}>
                     <h5><FaClock className="me-2 text-primary" /> Arrival Time</h5>
-                    <p className="fw-bold">{formatTime(flight.arrivalTime)}</p>
+                    <p className="fw-bold">{flight.arrivalTime}</p>
                   </Col>
                   <Col md={6}>
                     <h5><FaChair className="me-2 text-dark" /> Available Seats</h5>
