@@ -6,7 +6,7 @@
 
 ## User Credentials
 - **Email:** mail1@mail.com
-- **Password:** admin
+- **Password:** 1234qwer
 
 ## Description
 This project is a flight booking application that allows users to search for flights, book tickets, and manage their reservations. Admin users have additional privileges to manage flights, users, and other platform settings.
