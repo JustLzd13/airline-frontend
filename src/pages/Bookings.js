@@ -155,10 +155,10 @@ const Bookings = () => {
                     {/* ✅ Flight Details */}
                     <p className="text-center text-muted">Flight ID: {booking.flightId?._id}</p>
                     <p className="text-center">
-                      <FaBuilding className="me-2 text-dark" /> Airline: <strong>{booking.flightId.airlineName || "Unknown"}</strong>
+                      <FaBuilding className="me-2 text-dark" /> Airline: <strong>{booking.flightId?.airlineName || "Unknown"}</strong>
                     </p>
                     <p className="text-center">
-                      <FaPlane className="me-2 text-primary" /> Flight Number: <strong>{booking.flightId.flightNumber || "N/A"}</strong>
+                      <FaPlane className="me-2 text-primary" /> Flight Number: <strong>{booking.flightId?.flightNumber || "N/A"}</strong>
                     </p>
                     <p className="text-center">
                       ✈️ From: <strong>{booking.flightId?.from}</strong> → To: <strong>{booking.flightId?.to}</strong>

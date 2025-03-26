@@ -38,34 +38,34 @@ const AppNavbar = () => {
               </NavDropdown>
             )}
 
-            {/* MANAGE Section */}
-            <NavDropdown title="MANAGE" id="manage-dropdown">
-              <NavDropdown.Item as={Link} to="/manage/payment-options">Payment Options</NavDropdown.Item>
-              <NavDropdown.Item as={Link} to="/manage/flight-status">Flight Status</NavDropdown.Item>
-              <NavDropdown.Item as={Link} to="/manage/add-ons">Add-Ons</NavDropdown.Item>
-              <NavDropdown.Item as={Link} to="/profile">My Account</NavDropdown.Item>
-            </NavDropdown>
+            {/* Hide Manage, Travel Info, and About if the user is an admin */}
+            {!user?.isAdmin && (
+              <>
+                {/* MANAGE Section */}
+                <NavDropdown title="MANAGE" id="manage-dropdown">
+                  <NavDropdown.Item as={Link} to="/manage/payment-options">Payment Options</NavDropdown.Item>
+                  <NavDropdown.Item as={Link} to="/manage/flight-status">Flight Status</NavDropdown.Item>
+                  <NavDropdown.Item as={Link} to="/manage/add-ons">Add-Ons</NavDropdown.Item>
+                </NavDropdown>
 
-            {/* TRAVEL INFO Section */}
-            <NavDropdown title="TRAVEL INFO" id="travel-info-dropdown">
-              <NavDropdown.Item as={Link} to="/travel/explore">Explore</NavDropdown.Item>
-              <NavDropdown.Item as={Link} to="/travel/where-to-fly">Where To Fly?</NavDropdown.Item>
-              <NavDropdown.Item as={Link} to="/travel/discover-philippines">Discover Philippines</NavDropdown.Item>
-              <NavDropdown.Item as={Link} to="/travel/international">International Destinations</NavDropdown.Item>
-            </NavDropdown>
+                {/* TRAVEL INFO Section */}
+                <NavDropdown title="TRAVEL INFO" id="travel-info-dropdown">
+                  <NavDropdown.Item as={Link} to="/travel-info/where-to-fly">Where To Fly?</NavDropdown.Item>
+                  <NavDropdown.Item as={Link} to="/travel-info/discover-philippines">Discover Philippines</NavDropdown.Item>
+                </NavDropdown>
 
-            {/* ABOUT Section */}
-            <NavDropdown title="ABOUT" id="about-dropdown">
-              <NavDropdown.Item as={Link} to="/about">About</NavDropdown.Item>
-              <NavDropdown.Item as={Link} to="/about/who-we-are">Who Are We?</NavDropdown.Item>
-              <NavDropdown.Item as={Link} to="/about/partnerships">Partnerships</NavDropdown.Item>
-              <NavDropdown.Item as={Link} to="/contact">Contact Page</NavDropdown.Item>
-            </NavDropdown>
+                {/* ABOUT Section */}
+                <NavDropdown title="ABOUT" id="about-dropdown">
+                  <NavDropdown.Item as={Link} to="/about/who-we-are">Who Are We?</NavDropdown.Item>
+                  <NavDropdown.Item as={Link} to="/contact">Contact Page</NavDropdown.Item>
+                </NavDropdown>
+              </>
+            )}
 
             {/* ADMIN SECTION - Only visible if user.isAdmin is true */}
             {user?.isAdmin && (
               <NavDropdown title="ADMIN" id="admin-dropdown">
-                <NavDropdown.Item as={Link} to="/admin/add-flight">
+                <NavDropdown.Item as={Link} to="/admin-dashboard">
                   Admin Dashboard ✈️
                 </NavDropdown.Item>
               </NavDropdown>

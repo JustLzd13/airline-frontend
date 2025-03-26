@@ -11,8 +11,7 @@ const Footer = () => {
           {/* BOOK Section */}
           <Col md={2}>
             <h6 className="fw-bold">BOOK</h6>
-            <p><Link to="/book/flights" className="footer-link">Flights</Link></p>
-            <p><Link to="/book/bookings" className="footer-link">Bookings</Link></p>
+            <p><Link to="/bookings" className="footer-link">Bookings</Link></p>
           </Col>
 
           {/* MANAGE Section */}
@@ -21,24 +20,19 @@ const Footer = () => {
             <p><Link to="/manage/payment-options" className="footer-link">Payment Options</Link></p>
             <p><Link to="/manage/flight-status" className="footer-link">Flight Status</Link></p>
             <p><Link to="/manage/add-ons" className="footer-link">Add-ons</Link></p>
-            <p><Link to="/manage/account" className="footer-link">My Account</Link></p>
           </Col>
 
           {/* TRAVEL INFO Section */}
           <Col md={3}>
             <h6 className="fw-bold">TRAVEL INFO</h6>
-            <p><Link to="/travel/explore" className="footer-link">Explore</Link></p>
-            <p><Link to="/travel/where-to-fly" className="footer-link">Where To Fly?</Link></p>
-            <p><Link to="/travel/discover-philippines" className="footer-link">Discover Philippines</Link></p>
-            <p><Link to="/travel/international" className="footer-link">International Destinations</Link></p>
+            <p><Link to="/travel-info/where-to-fly" className="footer-link">Where To Fly?</Link></p>
+            <p><Link to="/travel-info/discover-philippines" className="footer-link">Discover Philippines</Link></p>
           </Col>
 
           {/* ABOUT Section */}
           <Col md={2}>
             <h6 className="fw-bold">ABOUT</h6>
-            <p><Link to="/about" className="footer-link">About</Link></p>
             <p><Link to="/about/who-we-are" className="footer-link">Who are We?</Link></p>
-            <p><Link to="/about/partnerships" className="footer-link">Partnerships</Link></p>
             <p><Link to="/about/company-info" className="footer-link">Company Info</Link></p>
           </Col>
 

@@ -11,6 +11,11 @@ import BookPage from "./pages/BookPage";
 import ContactPage from "./pages/ContactPage";
 import ViewFlight from "./pages/ViewFlight";
 import Error from "./pages/Error";
+import { PaymentOptions, FlightStatus, AddOns } from "./pages/ManagePages";
+import AdminDashboard from "./pages/AdminDashboard";
+import WhereToFly from "./pages/WhereToFly";
+import DiscoverPhilippines from "./pages/DiscoverPhilippines";
+import WhoAreWe from "./pages/WhoAreWe";
 import { UserProvider } from "./UserContext";
 import UserContext from "./UserContext";
 
@@ -67,8 +72,15 @@ const AppContent = () => {
         <Route path="/book" element={<BookPage />} />
         <Route path="/book/:id" element={user ? <BookPage /> : <Navigate to="/login" />} />
         <Route path="/contact" element={<ContactPage />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/view-flight" element={<ViewFlight />} />
         <Route path="/view-flight/:id" element={user ? <ViewFlight /> : <Navigate to="/login" />} />
+        <Route path="/manage/payment-options" element={<PaymentOptions />} />
+        <Route path="/manage/flight-status" element={<FlightStatus />} />
+        <Route path="/manage/add-ons" element={<AddOns />} />
+        <Route path="/travel-info/where-to-fly" element={<WhereToFly />} />
+        <Route path="/travel-info/discover-philippines" element={<DiscoverPhilippines />} />
+        <Route path="/about/who-we-are" element={<WhoAreWe />} />
         <Route path="*" element={<Error />} />
       </Routes>
     </Router>
