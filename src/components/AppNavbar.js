@@ -57,7 +57,7 @@ const AppNavbar = () => {
                 {/* ABOUT Section */}
                 <NavDropdown title="ABOUT" id="about-dropdown">
                   <NavDropdown.Item as={Link} to="/about/who-we-are">Who Are We?</NavDropdown.Item>
-                  <NavDropdown.Item as={Link} to="/contact">Contact Page</NavDropdown.Item>
+                  <NavDropdown.Item as={Link} to="/about/contact">Contact Page</NavDropdown.Item>
                 </NavDropdown>
               </>
             )}
