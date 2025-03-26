@@ -71,7 +71,7 @@ const AppContent = () => {
         <Route path="/bookings" element={user ? <Bookings /> : <Navigate to="/login" />} />
         <Route path="/book" element={<BookPage />} />
         <Route path="/book/:id" element={user ? <BookPage /> : <Navigate to="/login" />} />
-        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/about/contact" element={<ContactPage />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/view-flight" element={<ViewFlight />} />
         <Route path="/view-flight/:id" element={user ? <ViewFlight /> : <Navigate to="/login" />} />

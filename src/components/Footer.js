@@ -33,7 +33,7 @@ const Footer = () => {
           <Col md={2}>
             <h6 className="fw-bold">ABOUT</h6>
             <p><Link to="/about/who-we-are" className="footer-link">Who are We?</Link></p>
-            <p><Link to="/about/company-info" className="footer-link">Company Info</Link></p>
+            <p><Link to="/about/contact" className="footer-link">Contact Page</Link></p>
           </Col>
 
           {/* PAYMENT METHODS & AWARDS */}
